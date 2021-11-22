@@ -1,6 +1,6 @@
 package com.nttdata.controller;
 
-import java.util.List;
+import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -13,11 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.nttdata.dto.Response;
 import com.nttdata.model.Withdrawal;
-import com.nttdata.service.IAccountService;
 import com.nttdata.service.IWithdrawalService;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -27,58 +26,27 @@ public class WithdrawalController {
 	@Autowired
 	private IWithdrawalService service;
 	
-	@Autowired
-	private IAccountService accountService;
 	
 	
 	@PostMapping
-	public Mono<ResponseEntity<Response>> create(@RequestBody Withdrawal withdrawal, final ServerHttpRequest request) {
+	public Mono<ResponseEntity<Withdrawal>> create(@RequestBody Withdrawal withdrawal, final ServerHttpRequest request) {
 		
-		return accountService.findByAccountNumber(withdrawal.getAccount().getAccountNumber())
-				.flatMap(account -> {
-					if(withdrawal.getAmount() > account.getCurrentBalance()) {
-						return Mono.just(ResponseEntity
-								.badRequest()
-								.body(Response
-										.builder()
-										.error("El monto a retirar excede al saldo disponible")
-										.build()));
-					}
-					account.setCurrentBalance(account.getCurrentBalance() - withdrawal.getAmount());
-					withdrawal.setAccount(account);					
-					return service.create(withdrawal)
-							.flatMap(created -> {
-								return Mono.just(ResponseEntity
-										.ok()
-										.contentType(MediaType.APPLICATION_JSON)
-										.body(Response
-												.builder()
-												.data(withdrawal)
-												.build()));
-							});
-				})
-				.defaultIfEmpty(ResponseEntity
-						.badRequest()
-						.body(Response
-								.builder()
-								.error("No es posible realizar el retiro, el número de cuenta no existe")
-								.build()));
-		
+		return service.create(withdrawal)
+				.map(c -> ResponseEntity
+						.created(URI.create(request.getURI().toString().concat("/").concat(c.getId())))
+						.contentType(MediaType.APPLICATION_JSON)
+						.body(c));
 	}
 	
 	@GetMapping
-	public Mono<ResponseEntity<List<Withdrawal>>> findAll() {
+	public Mono<ResponseEntity<Flux<Withdrawal>>> findAll() {
 		
-		return service.findAll()
-				.collectList()
-				.flatMap(list->{
-					return list.size() > 0 ? 
-							Mono.just(ResponseEntity
-									.ok()
-									.contentType(MediaType.APPLICATION_JSON)
-									.body(list)) :
-							Mono.just(ResponseEntity.noContent().build());
-				});
+		Flux<Withdrawal> withdrawal = service.findAll();
+		
+		return Mono.just(ResponseEntity
+				.ok()
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(withdrawal));							
 		
 	}
 	
