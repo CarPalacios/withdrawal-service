@@ -1,22 +1,23 @@
 package com.nttdata.service.impl;
 
+import com.nttdata.model.Withdrawal;
+import com.nttdata.repository.Repository;
+import com.nttdata.repository.WithdrawalRepository;
+import com.nttdata.service.WithdrawalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.nttdata.model.Withdrawal;
-import com.nttdata.repository.IRepository;
-import com.nttdata.repository.IWithdrawalRepository;
-import com.nttdata.service.IWithdrawalService;
-
+/**La clase WithdrawalServiceImpl extiende a CRUDServiceImpl e implementa IWithdrawalService.*/
 @Service
-public class WithdrawalServiceImpl extends CRUDServiceImpl<Withdrawal, String> implements IWithdrawalService {
+public class WithdrawalServiceImpl extends 
+    CRUDServiceImpl<Withdrawal, String> implements WithdrawalService {
 
-	@Autowired
-	private IWithdrawalRepository repository;
+  @Autowired
+  private WithdrawalRepository repository;
 
-	@Override
-	protected IRepository<Withdrawal, String> getRepository() {
-		return repository;
-	}
+  @Override
+  protected Repository<Withdrawal, String> getRepository() {
+    return repository;
+  }
 
 }
