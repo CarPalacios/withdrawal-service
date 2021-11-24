@@ -7,10 +7,10 @@ import com.nttdata.service.WithdrawalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**La clase WithdrawalServiceImpl extiende a CRUDServiceImpl e implementa IWithdrawalService.*/
+/**La clase WithdrawalServiceImpl extiende a import lombok.Data; e implementa IWithdrawalService.*/
 @Service
-public class WithdrawalServiceImpl extends 
-    CRUDServiceImpl<Withdrawal, String> implements WithdrawalService {
+public class WithdrawalServiceImpl extends    
+    CrudServiceImpl<Withdrawal, String> implements WithdrawalService {
 
   @Autowired
   private WithdrawalRepository repository;
